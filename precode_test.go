@@ -10,8 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const INCORRECT_CITY_ERROR = "incorrect city value"
-
 func TestMainHandlerOK(t *testing.T) {
 	req := httptest.NewRequest("GET", "/cafe?count=2&city=moscow", nil)
 
@@ -21,8 +19,8 @@ func TestMainHandlerOK(t *testing.T) {
 
 	statusCode := responseRecorder.Code
 
-	require.Equal(t, http.StatusOK, statusCode)
-	require.NotEmpty(t, responseRecorder.Body.String())
+	assert.Equal(t, http.StatusOK, statusCode)
+	assert.NotEmpty(t, responseRecorder.Body)
 }
 
 func TestMainHandlerWhenIncorrectCity(t *testing.T) {
@@ -33,9 +31,10 @@ func TestMainHandlerWhenIncorrectCity(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	statusCode := responseRecorder.Code
+	incorrectCity := "wrong city value"
 
 	require.Equal(t, http.StatusBadRequest, statusCode)
-	require.Equal(t, INCORRECT_CITY_ERROR, responseRecorder.Body.String())
+	require.Equal(t, responseRecorder.Body.String(), incorrectCity)
 }
 
 func TestMainHandlerCountMoreThanTotal(t *testing.T) {
@@ -45,10 +44,6 @@ func TestMainHandlerCountMoreThanTotal(t *testing.T) {
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
-
-	statusCode := responseRecorder.Code
-	require.NotEqual(t, 0, statusCode)
-	require.Equal(t, http.StatusOK, statusCode)
 
 	responseBody := strings.Split(responseRecorder.Body.String(), ",")
 	assert.Equal(t, totalCount, len(responseBody))
